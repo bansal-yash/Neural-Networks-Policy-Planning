@@ -4,7 +4,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 import stormpy
-from stable_baselines3 import DQN, PPO
+from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
 
@@ -79,7 +79,6 @@ def inspect_model_structure(model):
     print(f"State 0 transitions: row group {row_start} to {row_end}")
 
 
-# ---------- STEP 2: Define Gymnasium-compatible wrapper ----------
 class JANIStormEnv(gym.Env):
     def __init__(self, model, properties=None, max_steps: int = 3000):
         super().__init__()
@@ -276,11 +275,11 @@ class JANIStormEnv(gym.Env):
         return valid_actions
 
 
-# ---------- STEP 3: Main Training Code ----------
 def main():
 
     # model_path = "blocksworld.5.v1.jani"
     model_path = "elevators.a-3-3.v1.jani"
+
     jani_model, properties = load_jani_model(model_path)
 
     inspect_model_structure(jani_model)
@@ -327,32 +326,15 @@ def main():
         n_envs=1,
     )
 
-    # Initialize and train DQN model
-    # model = PPO(
-    #     "MlpPolicy",
-    #     vec_env,
-    #     verbose=1,
-    #     learning_rate=0.0001,
-    #     # buffer_size=10000,
-    #     # learning_starts=10000,
-    #     # target_update_interval=5000,
-    #     # train_freq=10,
-    #     # exploration_fraction=0.3,
-    #     # exploration_final_eps=0.1
-    # )
-
     policy_kwargs = dict(net_arch=[512, 512, 256, 256, 128])  # 5 hidden layers
 
     model = DQN(
         "MlpPolicy",
         vec_env,
         verbose=1,
-        # learning_rate=0.0001,
-        # buffer_size=10000,
+        learning_rate=0.0001,
         learning_starts=10000,
-        # target_update_interval=5000,
-        # train_freq=10,
-        # exploration_fraction=0.3,
+        exploration_fraction=0.3,
         exploration_final_eps=0.3,
         policy_kwargs=policy_kwargs,
     )

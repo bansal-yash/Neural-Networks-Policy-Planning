@@ -3,7 +3,7 @@ Neural network and reinforcement learning models for efficient decision-making o
 
 This project provides a custom Gymnasium environment for **model-based reinforcement learning** on **JANI models** using **Stormpy** and **Stable-Baselines3 (SB3)**. It allows parsing JANI models, building transition systems, defining goal-oriented RL environments, and training agents (e.g., DQN) to solve them.
 
-> 🧪 **This project was developed as part of a research internship** at the *Foundations of Artificial Intelligence* group, **Saarland University**, under the supervision of **Prof. Joerg Hoffmann**.
+> 🧪 **This project was developed as part of a research internship** at the *Foundations of Artificial Intelligence* group, **Saarland University, Germany**, under the supervision of **Prof. Joerg Hoffmann**.
 
 ## 📌 Features
 

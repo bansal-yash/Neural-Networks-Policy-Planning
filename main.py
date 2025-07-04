@@ -4,7 +4,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 import stormpy
-from stable_baselines3 import DQN
+from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
 
@@ -277,8 +277,8 @@ class JANIStormEnv(gym.Env):
 
 def main():
 
-    # model_path = "blocksworld.5.v1.jani"
-    model_path = "elevators.a-3-3.v1.jani"
+    model_path = "blocksworld.5.v1.jani"
+    # model_path = "elevators.a-3-3.v1.jani"
 
     jani_model, properties = load_jani_model(model_path)
 
@@ -334,13 +334,13 @@ def main():
         verbose=1,
         learning_rate=0.0001,
         learning_starts=10000,
-        exploration_fraction=0.3,
-        exploration_final_eps=0.3,
-        policy_kwargs=policy_kwargs,
+        exploration_fraction=0.6,
+        exploration_final_eps=0.4,
+        # policy_kwargs=policy_kwargs,
     )
 
     print("Starting training...")
-    model.learn(total_timesteps=100000)
+    model.learn(total_timesteps=300000)
 
     # Save the trained model
     model.save("jani_dqn_model")
@@ -352,7 +352,7 @@ def main():
     total_reward = 0
 
     for step in range(1000):
-        action, _ = model.predict(obs, deterministic=False)
+        action, _ = model.predict(obs, deterministic=True)
 
         print(action)
 

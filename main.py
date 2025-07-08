@@ -97,7 +97,7 @@ class CustomDQNNetwork(nn.Module):
 
         for layer_size in net_arch:
             layers.append(nn.Linear(last_dim, layer_size))
-            layers.append(nn.LayerNorm(layer_size))  # 👈 Add LayerNorm
+            layers.append(nn.LayerNorm(layer_size))
             layers.append(activation_fn())
             last_dim = layer_size
 
@@ -114,16 +114,15 @@ class CustomDQNPolicy(DQNPolicy):
         super().__init__(
             *args,
             **kwargs,
-            net_arch=[],  # Not used since we override _build_q_net
+            net_arch=[],
             activation_fn=nn.ReLU,
         )
 
     def _build_q_net(self, features_dim, action_dim):
-        # We override this method to inject LayerNorm
         return CustomDQNNetwork(
             self.observation_space,
             self.action_space,
-            net_arch=[512, 512, 256, 256, 128],  # Your custom layers
+            net_arch=[512, 512, 256, 256, 128],
             activation_fn=self.activation_fn,
         )
 

@@ -7,6 +7,8 @@ import stormpy
 from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
+import torch.nn as nn
+from stable_baselines3.dqn.policies import DQNPolicy
 
 
 def load_jani_model(path: str):
@@ -77,6 +79,53 @@ def inspect_model_structure(model):
     row_start = tm.get_row_group_start(0)
     row_end = tm.get_row_group_end(0)
     print(f"State 0 transitions: row group {row_start} to {row_end}")
+
+
+class CustomDQNNetwork(nn.Module):
+    def __init__(
+        self, observation_space, action_space, net_arch, activation_fn=nn.ReLU
+    ):
+        super().__init__()
+
+        input_dim = (
+            observation_space.n
+            if hasattr(observation_space, "n")
+            else observation_space.shape[0]
+        )
+        layers = []
+        last_dim = input_dim
+
+        for layer_size in net_arch:
+            layers.append(nn.Linear(last_dim, layer_size))
+            layers.append(nn.LayerNorm(layer_size))  # 👈 Add LayerNorm
+            layers.append(activation_fn())
+            last_dim = layer_size
+
+        self.mlp = nn.Sequential(*layers)
+        self.q_head = nn.Linear(last_dim, action_space.n)
+
+    def forward(self, x):
+        x = self.mlp(x)
+        return self.q_head(x)
+
+
+class CustomDQNPolicy(DQNPolicy):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            **kwargs,
+            net_arch=[],  # Not used since we override _build_q_net
+            activation_fn=nn.ReLU,
+        )
+
+    def _build_q_net(self, features_dim, action_dim):
+        # We override this method to inject LayerNorm
+        return CustomDQNNetwork(
+            self.observation_space,
+            self.action_space,
+            net_arch=[512, 512, 256, 256, 128],  # Your custom layers
+            activation_fn=self.activation_fn,
+        )
 
 
 class JANIStormEnv(gym.Env):
@@ -330,6 +379,7 @@ def main():
 
     model = DQN(
         "MlpPolicy",
+        # CustomDQNPolicy,
         vec_env,
         verbose=1,
         learning_rate=0.0001,
